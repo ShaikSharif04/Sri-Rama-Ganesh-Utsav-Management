@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}WhatsApp Communication{% endblock %}
+{% block page_heading %}WhatsApp Communication{% endblock %}
+{% block content %}
+<div class="page-intro"><div><div class="eyebrow">WHATSAPP COMMUNICATION</div><h1>Send Messages</h1><p>Select contributors, edit the message, preview it and work through the WhatsApp sending queue.</p></div><div class="intro-badge green-badge">◉ WhatsApp Click-to-Chat</div></div>
+
+<div class="message-tabs panel" role="tablist" aria-label="Message type">
+  <button class="message-tab active" type="button" data-message-tab="chanda">🙏 Chanda Thank You Message</button>
+  <button class="message-tab" type="button" data-message-tab="expenses">▤ Festival Expenses Summary</button>
+</div>
+
+<section class="message-workspace" id="chandaWorkspace">
+  <div class="panel message-selection-panel">
+    <div class="section-title-row"><div><h2>Select Chanda Contributors</h2><p>Choose everyone who contributed, or select individual people.</p></div><span class="subtle-chip" id="chandaSelectedCount">0 selected</span></div>
+    <div class="selection-tools">
+      <label class="select-all-label"><input type="checkbox" id="chandaSelectAll"> <strong>Select All Contributors</strong></label>
+      <select id="chandaAudience" aria-label="Choose contributors"><option value="paid">Paid contributors only</option><option value="all">All member records</option><option value="pending">Pending records only</option></select>
+    </div>
+    <div class="bulk-recipient-list" id="chandaRecipientList">
+      {% for p in persons %}
+      <label class="bulk-recipient"><input type="checkbox" class="bulk-person" data-group="chanda" value="{{ p.id }}" data-status="{{ p.payment_status }}" data-name="{{ p.name }}" data-phone="{{ p.phone }}" data-amount="{{ p.amount_received }}"><span class="bulk-recipient-name">{{ p.name }}</span><span class="bulk-recipient-phone">{{ p.phone }}</span><span class="{% if p.payment_status == 'paid' %}paid-pill{% else %}pending-pill{% endif %}">{{ p.payment_status|title }}</span></label>
+      {% else %}<p class="empty-inline">No contributors available. Add people first.</p>{% endfor %}
+    </div>
+  </div>
+  <div class="panel message-editor-panel">
+    <div class="section-title-row"><div><h2>Editable Thank-you Message</h2><p>Personalized name and received amount are filled for each recipient.</p></div></div>
+    <textarea class="bulk-message-textarea" id="chandaMessage">🙏 శ్రీ రామ గణేష్ ఉత్సవానికి చందా అందించినందుకు హృదయపూర్వక ధన్యవాదాలు.
+
+&#123;&#123;name&#125;&#125; గారు, మీరు అందించిన చందా మొత్తం &#123;&#123;amount_received&#125;&#125;.
+
+ధన్యవాదాలు 🙏
+
+&#123;&#123;location&#125;&#125;</textarea>
+    <div class="message-tokens"><span>Variables:</span><code>&#123;&#123;name&#125;&#125;</code><code>&#123;&#123;amount_received&#125;&#125;</code><code>&#123;&#123;location&#125;&#125;</code></div>
+    <div class="message-preview-box"><strong>Message Preview</strong><p id="chandaMessagePreview">🙏 శ్రీ రామ గణేష్ ఉత్సవానికి చందా అందించినందుకు హృదయపూర్వక ధన్యవాదాలు.</p></div>
+    <div class="message-action-row"><button class="btn btn-light" type="button" id="resetChandaMessage">Use Default</button><button class="btn btn-whatsapp" type="button" id="startChandaBulk">◉ Prepare WhatsApp Queue</button></div>
+    <div class="bulk-queue" id="chandaQueue" hidden><div><strong id="chandaQueueTitle">WhatsApp queue</strong><p id="chandaQueueProgress"></p></div><button class="btn btn-whatsapp" id="chandaOpenNext" type="button">Open first WhatsApp chat →</button><small>After pressing Send in WhatsApp, return here and choose the next chat.</small></div>
+  </div>
+</section>
+
+<section class="message-workspace" id="expensesWorkspace" hidden>
+  <div class="panel message-selection-panel">
+    <div class="section-title-row"><div><h2>Select Members for Expense Summary</h2><p>Default selection includes people with Paid chanda records.</p></div><span class="subtle-chip" id="expenseSelectedCount">0 selected</span></div>
+    <div class="selection-tools"><label class="select-all-label"><input type="checkbox" id="expenseSelectAll"> <strong>Select All Paid Contributors</strong></label><select id="expenseAudience" aria-label="Choose expense summary recipients"><option value="paid">Paid contributors only</option><option value="all">All member records</option><option value="pending">Pending records only</option></select></div>
+    <div class="bulk-recipient-list" id="expenseRecipientList">
+      {% for p in persons %}
+      <label class="bulk-recipient"><input type="checkbox" class="bulk-person" data-group="expenses" value="{{ p.id }}" data-status="{{ p.payment_status }}" data-name="{{ p.name }}" data-phone="{{ p.phone }}" data-amount="{{ p.amount_received }}"><span class="bulk-recipient-name">{{ p.name }}</span><span class="bulk-recipient-phone">{{ p.phone }}</span><span class="{% if p.payment_status == 'paid' %}paid-pill{% else %}pending-pill{% endif %}">{{ p.payment_status|title }}</span></label>
+      {% else %}<p class="empty-inline">No contributors available. Add people first.</p>{% endfor %}
+    </div>
+  </div>
+  <div class="panel message-editor-panel">
+    <div class="section-title-row"><div><h2>Festival Financial Summary Message</h2><p>Expense table and live financial totals are inserted automatically.</p></div></div>
+    <textarea class="bulk-message-textarea" id="expenseMessage">🙏 శ్రీ రామ గణేష్ ఉత్సవ సంఘం – &#123;&#123;location&#125;&#125;
+
+ప్రియమైన సభ్యులారా,
+ఈ సంవత్సరం గణేష్ ఉత్సవ ఖర్చుల వివరాలు:
+
+&#123;&#123;expense_table&#125;&#125;
+
+&#123;&#123;financial_summary&#125;&#125;
+
+మీ సహకారానికి ధన్యవాదాలు 🙏</textarea>
+    <div class="message-tokens"><span>Variables:</span><code>&#123;&#123;expense_table&#125;&#125;</code><code>&#123;&#123;total_chanda&#125;&#125;</code><code>&#123;&#123;total_pending&#125;&#125;</code><code>&#123;&#123;total_expenses&#125;&#125;</code><code>&#123;&#123;remaining_balance&#125;&#125;</code><code>&#123;&#123;location&#125;&#125;</code></div>
+    <div class="financial-preview-grid" id="financialPreview"><div><span>Total Paid Chanda</span><strong>Loading…</strong></div><div><span>Total Expenses</span><strong>Loading…</strong></div><div><span>Remaining Balance</span><strong>Loading…</strong></div></div>
+    <div class="message-preview-box"><strong>Message Preview</strong><pre id="expenseMessagePreview">Select members to prepare the financial summary.</pre></div>
+    <div class="message-action-row"><button class="btn btn-light" type="button" id="resetExpenseMessage">Use Default</button><button class="btn btn-whatsapp" type="button" id="startExpenseBulk">◉ Prepare WhatsApp Queue</button></div>
+    <div class="bulk-queue" id="expenseQueue" hidden><div><strong id="expenseQueueTitle">WhatsApp queue</strong><p id="expenseQueueProgress"></p></div><button class="btn btn-whatsapp" id="expenseOpenNext" type="button">Open first WhatsApp chat →</button><small>After pressing Send in WhatsApp, return here and choose the next chat.</small></div>
+  </div>
+</section>
+
+<section class="panel communication-note"><div class="note-symbol">ⓘ</div><div><strong>Important about bulk WhatsApp sending</strong><p>This application prepares a personalized chat for each selected member and guides you through the list one by one. WhatsApp Click-to-Chat does not allow a website to silently broadcast or press Send for you. You must press <strong>Send</strong> in each WhatsApp chat. For approved automated bulk delivery, connect the official WhatsApp Business Platform API and use approved message templates with recipient consent.</p></div></section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/messages.js') }}"></script>{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Expenses{% endblock %}{% block page_heading %}Expenses{% endblock %}
+{% block content %}
+<div class="page-intro"><div><div class="eyebrow">FESTIVAL FINANCE</div><h1>Expenses</h1><p>Record every festival expense and share a clear summary with contributors.</p></div><div class="total-expense-card"><span>Total Expenses</span><strong>{{ total|money }}</strong></div></div>
+<div class="content-grid expense-layout">
+  <section class="panel form-panel"><div class="panel-heading"><div class="heading-icon pink">▣+</div><div><h2>Add Expense</h2><p>Enter the expense details</p></div></div>
+    <form method="post" class="stack-form" id="expenseForm">
+      <label>Expense For <em>*</em><select name="expense_for" required><option value="">Select category</option><option>Decoration</option><option>Sound System</option><option>Lighting</option><option>Prasadam</option><option>Idol &amp; Pooja Items</option><option>Annadanam / Food</option><option>Events &amp; Cultural Programs</option><option>Transportation</option><option>Other</option></select></label>
+      <label>Description <em>*</em><input name="description" required placeholder="e.g. Mandapam & lights"></label>
+      <div class="form-two"><label>Amount <em>*</em><div class="currency-input"><span>₹</span><input name="amount" type="number" min="0.01" step="0.01" required placeholder="Enter amount"></div></label><label>Date <em>*</em><input name="expense_date" type="date" value="{{ now_date if now_date else '' }}" required></label></div>
+      <button class="btn btn-primary full-width" type="submit">＋ &nbsp; Submit Expense</button>
+      <div class="form-note"><span>ⓘ</span> Once saved, you can prepare an editable expense summary message.</div>
+    </form>
+  </section>
+  <section class="panel expense-record-panel"><div class="section-title-row"><div><h2>Expense Records</h2><p>All recorded festival spending</p></div><button class="btn btn-whatsapp btn-small" type="button" id="openExpenseComposer">◉ Send Expense Summary</button></div>
+    <div class="table-wrap"><table><thead><tr><th>#</th><th>Particulars</th><th>Description</th><th>Date</th><th>Amount</th><th></th></tr></thead><tbody>
+    {% for e in expenses %}<tr><td>{{ loop.index }}</td><td><strong>{{ e.expense_for }}</strong></td><td>{{ e.description }}</td><td>{{ e.expense_date|date_display }}</td><td class="amount-cell">{{ e.amount|money }}</td><td><form method="post" action="{{ url_for('delete_expense', expense_id=e.id) }}" onsubmit="return confirm('Delete this expense record?')"><button class="icon-btn delete" title="Delete">▢</button></form></td></tr>
+    {% else %}<tr><td colspan="6"><div class="empty-inline">No expenses recorded yet.</div></td></tr>{% endfor %}
+    </tbody></table></div>
+    <div class="table-total"><span>Total Expenses</span><strong>{{ total|money }}</strong></div>
+  </section>
+</div>
+
+<div class="modal-backdrop" id="expenseModal" aria-hidden="true"><section class="modal modal-wide"><div class="modal-header"><div class="modal-title-icon whatsapp-icon">◉</div><div><h2>WhatsApp Message (Expenses)</h2><p>Review the summary and choose who should receive it</p></div><button class="modal-close" data-close="expenseModal">×</button></div>
+  <div class="modal-body message-layout"><div class="message-editor"><label>Expense Summary Message<textarea id="expenseTemplate" rows="7">🙏 శ్రీ రామ గణేష్ ఉత్సవం, నాగిలిగొండ్ (గ్రామం), ఖమ్మం తరఫున మీకు నమస్కారం.
+
+ఈ సంవత్సరం ఉత్సవాల ఖర్చుల వివరాలు:
+
+{% raw %}{{expense_table}}{% endraw %}
+
+ఆర్థిక వివరాలు:
+మొత్తం అందిన చందా: {% raw %}{{total_chanda}}{% endraw %}
+మొత్తం ఖర్చులు: {% raw %}{{total_expenses}}{% endraw %}
+మిగిలిన చందా: {% raw %}{{remaining_balance}}{% endraw %}
+
+ధన్యవాదాలు 🙏</textarea></label><div class="variable-row"><span>Available variables:</span><button type="button" class="token" data-insert="{% raw %}{{expense_table}}{% endraw %}">{% raw %}{{expense_table}}{% endraw %}</button><button type="button" class="token" data-insert="{% raw %}{{total_chanda}}{% endraw %}">{% raw %}{{total_chanda}}{% endraw %}</button><button type="button" class="token" data-insert="{% raw %}{{total_expenses}}{% endraw %}">{% raw %}{{total_expenses}}{% endraw %}</button><button type="button" class="token" data-insert="{% raw %}{{remaining_balance}}{% endraw %}">{% raw %}{{remaining_balance}}{% endraw %}</button></div>
+  <div class="recipient-box"><div class="recipient-head"><strong>Send to</strong><span id="expenseRecipientCount">0 selected</span></div><div class="audience-options"><label><input type="radio" name="expenseAudience" value="all" checked> All persons</label><label><input type="radio" name="expenseAudience" value="pending"> Only pending persons</label><label><input type="radio" name="expenseAudience" value="manual"> Select manually</label></div><div class="recipient-list" id="expenseRecipients">{% for p in all_persons %}<label><input type="checkbox" class="expense-recipient-check" value="{{ p.id }}" data-status="{{ p.payment_status }}" checked><span>{{ p.name }}</span><small>{{ p.phone }}</small></label>{% endfor %}</div></div>
+  <div class="modal-actions"><button class="btn btn-light" type="button" id="resetExpenseTemplate">↺ Use Default</button><button class="btn btn-whatsapp" type="button" id="startExpenseQueue">➤ Start WhatsApp Sending</button></div></div>
+  <div class="message-preview-col"><div class="preview-heading">Expense Message Preview</div><div class="whatsapp-preview"><div class="preview-brand">◉ &nbsp; WhatsApp</div><div id="expensePreview" class="preview-bubble"><span class="muted">Your expense summary will appear here.</span></div></div><div class="expense-mini-table" id="expensePreviewTable"></div><div class="send-queue-card" id="expenseQueueCard" hidden><strong>WhatsApp sending queue</strong><p id="expenseQueueStatus"></p><button class="btn btn-whatsapp full-width" id="openNextExpense" type="button">Open next person in WhatsApp →</button><small>Press Send in WhatsApp, then return here for the next person.</small></div></div></div>
+</section></div>
+{% endblock %}
+{% block scripts %}<script>window.EXPENSES_COMPOSE_ON_LOAD = {{ 'true' if request.args.get('compose') else 'false' }};</script><script src="{{ url_for('static', filename='js/expenses.js') }}"></script>{% endblock %}

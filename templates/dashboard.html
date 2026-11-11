@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_heading %}Dashboard{% endblock %}
+{% block content %}
+<section class="festival-banner">
+  <div class="banner-copy"><div class="banner-kicker">GANESH FESTIVAL MANAGEMENT SYSTEM</div><h1>{{ app_name }}</h1><p>{{ app_location }}</p><div class="banner-blessing">శ్రీ గణేశాయ నమః · Ganapathi Bappa Moriya 🙏</div></div>
+  <img src="{{ url_for('static', filename='images/ganesh-banner.jpg') }}" alt="Ganesh festival devotional decoration" class="banner-art">
+  <div class="banner-glow"></div>
+</section>
+<section class="stats-grid">
+  <article class="stat-card"><div class="stat-icon violet">♟</div><div class="stat-label">Total Persons</div><div class="stat-value">{{ stats.total_people }}</div><div class="stat-foot">Registered contributors</div></article>
+  <article class="stat-card"><div class="stat-icon saffron">₹</div><div class="stat-label">Total Chanda</div><div class="stat-value">{{ stats.total_chanda|money }}</div><div class="stat-foot">Total amount received</div></article>
+  <article class="stat-card"><div class="stat-icon green">▣</div><div class="stat-label">Total Expenses</div><div class="stat-value">{{ expense_total|money }}</div><div class="stat-foot">Recorded festival costs</div></article>
+  <article class="stat-card"><div class="stat-icon coral">◉</div><div class="stat-label">Balance</div><div class="stat-value">{{ balance|money }}</div><div class="stat-foot">Chanda minus expenses</div></article>
+</section>
+<section class="panel quick-panel">
+  <div class="section-title-row"><div><h2>Quick Actions</h2><p>Manage contributions and festival spending</p></div><span class="subtle-chip">Your festival workspace</span></div>
+  <div class="quick-grid">
+    <a href="{{ url_for('persons') }}" class="quick-action quick-purple"><span class="quick-icon">♟+</span><strong>Add Person</strong><small>(Chanda)</small></a>
+    <a href="{{ url_for('expenses') }}" class="quick-action quick-pink"><span class="quick-icon">▣+</span><strong>Add Expense</strong><small>Record spending</small></a>
+    <a href="{{ url_for('send_messages') }}?type=chanda" class="quick-action quick-green"><span class="quick-icon">◉</span><strong>Send Chanda</strong><small>WhatsApp message</small></a>
+    <a href="{{ url_for('send_messages') }}?type=expense" class="quick-action quick-blue"><span class="quick-icon">➤</span><strong>Send Expense</strong><small>Summary to people</small></a>
+  </div>
+</section>
+<section class="dashboard-lower">
+  <div class="panel table-panel"><div class="section-title-row"><div><h2>Recent Chanda Records</h2><p>Latest contribution entries</p></div><a class="text-link" href="{{ url_for('persons') }}">View all →</a></div>
+    {% if recent_people %}<div class="table-wrap"><table><thead><tr><th>Name</th><th>Phone</th><th>Chanda Amount</th><th>Status</th></tr></thead><tbody>{% for p in recent_people %}<tr><td class="person-cell"><span class="person-avatar">{{ p.name[:1]|upper }}</span>{{ p.name }}</td><td>{{ p.phone }}</td><td class="amount-cell">{{ p.amount_received|money }}</td><td>{% if p.payment_status == 'paid' %}<span class="paid-pill">Paid</span>{% else %}<span class="pending-pill">Pending</span>{% endif %}</td></tr>{% endfor %}</tbody></table></div>{% else %}<div class="empty-state"><span>♟</span><strong>No chanda records yet</strong><p>Add your first contributor to begin.</p><a class="btn btn-primary btn-small" href="{{ url_for('persons') }}">Add Person</a></div>{% endif %}
+  </div>
+  <div class="panel table-panel"><div class="section-title-row"><div><h2>Recent Expenses</h2><p>Latest recorded spending</p></div><a class="text-link" href="{{ url_for('expenses') }}">View all →</a></div>
+    {% if recent_expenses %}<div class="table-wrap"><table><thead><tr><th>Particulars</th><th>Date</th><th>Amount</th></tr></thead><tbody>{% for e in recent_expenses %}<tr><td><strong>{{ e.expense_for }}</strong><small class="table-sub">{{ e.description }}</small></td><td>{{ e.expense_date|date_display }}</td><td class="amount-cell">{{ e.amount|money }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<div class="empty-state compact"><span>▤</span><strong>No expenses recorded</strong><p>Your expense entries will appear here.</p></div>{% endif %}
+  </div>
+</section>
+{% endblock %}

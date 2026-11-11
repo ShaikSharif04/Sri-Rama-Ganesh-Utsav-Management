@@ -1,0 +1,22 @@
+UPGRADE TO THE UPDATED GANESH FESTIVAL APP
+
+1. Stop the currently running app (press Ctrl+C in its PowerShell window).
+2. Back up your existing database file if it exists:
+   ganesh_festival_app\instance\ganesh.db
+3. Extract this updated ZIP.
+4. Copy the updated files inside the new ganesh_festival_app folder over your current ganesh_festival_app folder.
+   Keep your existing instance\ganesh.db file. Do not delete it.
+5. Start the app with start_windows.bat. This version uses the `python` command (not `py`).
+6. On first launch, the app automatically adds the Paid/Pending status column to your existing database.
+
+PAYMENT RULES
+- Pay: saves the contributor and marks them Paid.
+- Pay Later: saves the contributor and marks them Pending.
+- Send WhatsApp Message: opens an editable message and WhatsApp; it does not save the form entry. Use Pay or Pay Later when you want to save the person.
+- Only Paid amounts count as Total Chanda Received. Pending amounts are excluded until the status is changed to Paid in Edit Person Details.
+
+EXPENSE SUMMARY
+The WhatsApp expense summary includes the itemized expense table, Total Chanda Received (Paid entries only), Total Expenses, and Remaining Chanda Balance.
+
+WHATSAPP
+The app prepares click-to-chat messages. You must press Send inside WhatsApp. Fully automatic sending requires the official WhatsApp Business Platform API.

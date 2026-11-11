@@ -1,0 +1,14 @@
+RAILWAY DEPLOYMENT CHECKLIST
+
+[ ] Push all project files to a GitHub repository.
+[ ] Create Railway project -> Deploy from GitHub repository.
+[ ] Set SECRET_KEY to a long random value.
+[ ] Set ADMIN_USERNAME to your preferred login username.
+[ ] Set ADMIN_PASSWORD to a strong initial password BEFORE first deploy.
+[ ] Set DATABASE_PATH=/data/ganesh.db.
+[ ] Set COOKIE_SECURE=1.
+[ ] Add a Railway Volume mounted at /data.
+[ ] Generate a public domain.
+[ ] Test login, add a person, add an expense, and check dashboard totals.
+[ ] Test WhatsApp click-to-chat on a phone with WhatsApp installed.
+[ ] Back up the SQLite database file regularly.

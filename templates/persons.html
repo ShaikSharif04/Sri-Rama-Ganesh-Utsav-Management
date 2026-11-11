@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Person Details{% endblock %}
+{% block page_heading %}Person Details (Chanda){% endblock %}
+{% block content %}
+<div class="page-intro"><div><div class="eyebrow">CHANDA MANAGEMENT</div><h1>Person Details <span>(Chanda)</span></h1><p>Add contributors, record their chanda amount and mark payment status.</p></div><div class="intro-badge">🙏 Seva begins with gratitude</div></div>
+<div class="content-grid person-layout">
+  <section class="panel form-panel">
+    <div class="panel-heading"><div class="heading-icon violet">♟+</div><div><h2>Add Person Details</h2><p>Enter contributor information below</p></div></div>
+    <form method="post" class="stack-form" id="personForm">
+      <label>Name <em>*</em><input name="name" id="personName" required placeholder="Enter person name"></label>
+      <label>Phone Number <em>*</em><input name="phone" id="personPhone" inputmode="tel" required placeholder="Enter WhatsApp number (e.g. 9876543210)"><small>For Indian mobile numbers, country code +91 is added automatically.</small></label>
+      <label>Chanda Amount <em>*</em><div class="currency-input"><span>₹</span><input name="amount_received" id="personAmount" type="number" min="0" step="0.01" value="0" required></div></label>
+      <label>Notes <small class="optional">(Optional)</small><input name="notes" placeholder="Any additional information"></label>
+      <div class="person-action-buttons">
+        <button class="btn btn-paid" type="submit" name="action" value="pay">✓ Pay</button>
+        <button class="btn btn-pending" type="submit" name="action" value="pay_later">◷ Pay Later</button>
+        <button class="btn btn-whatsapp" type="button" id="openIndividualWhatsapp">◉ Send WhatsApp Message</button>
+      </div>
+      <div class="form-note"><span>ⓘ</span> Pay saves this person as Paid. Pay Later saves the same amount as Pending. WhatsApp opens a message preview and does not save the record.</div>
+    </form>
+  </section>
+
+  <section class="panel records-panel">
+    <div class="section-title-row"><div><h2>Existing Persons</h2><p>{{ persons|length }} record(s) shown</p></div><a class="text-link" href="{{ url_for('send_messages') }}">Send Messages →</a></div>
+    <form method="get" class="search-bar"><span>⌕</span><input name="q" value="{{ query }}" placeholder="Search by name or phone..."><button class="btn btn-light btn-small">Search</button>{% if query %}<a class="clear-search" href="{{ url_for('persons') }}">Clear</a>{% endif %}</form>
+    <div class="bulk-toolbar"><label class="check-label"><input type="checkbox" id="selectAllPersons"> Select all</label><span id="selectedCount">0 selected</span><button type="button" class="btn btn-whatsapp btn-small" id="sendSelectedChanda" disabled>◉ Send Chanda Update</button></div>
+    <div class="table-wrap"><table class="data-table"><thead><tr><th></th><th>#</th><th>Name</th><th>Phone Number</th><th>Chanda Amount</th><th>Status</th><th>Action</th></tr></thead><tbody>
+    {% for p in persons %}
+      <tr>
+        <td><input class="person-check" type="checkbox" value="{{ p.id }}" data-person-name="{{ p.name }}" data-phone="{{ p.phone }}" data-received="{{ p.amount_received }}" data-status="{{ p.payment_status }}"></td>
+        <td>{{ loop.index }}</td><td><strong>{{ p.name }}</strong></td><td>{{ p.phone }}</td>
+        <td class="amount-cell">{{ p.amount_received|money }}</td>
+        <td>{% if p.payment_status == 'paid' %}<span class="paid-pill">Paid</span>{% else %}<span class="pending-pill">Pending</span>{% endif %}</td>
+        <td class="actions-cell">
+          <button type="button" class="icon-btn edit-person" title="Edit" data-id="{{ p.id }}" data-name="{{ p.name }}" data-phone="{{ p.phone }}" data-received="{{ p.amount_received }}" data-status="{{ p.payment_status }}">✎</button>
+          <form method="post" action="{{ url_for('delete_person', person_id=p.id) }}" onsubmit="return confirm('Delete this person record?')"><button class="icon-btn delete" title="Delete">▢</button></form>
+          <button class="icon-btn whatsapp-one" title="Prepare WhatsApp message" data-id="{{ p.id }}">◉</button>
+        </td>
+      </tr>
+    {% else %}<tr><td colspan="7"><div class="empty-inline">No people found. Add your first person using the form.</div></td></tr>{% endfor %}
+    </tbody></table></div>
+  </section>
+</div>
+
+<div class="modal-backdrop" id="chandaModal" aria-hidden="true"><section class="modal modal-wide">
+  <div class="modal-header"><div class="modal-title-icon whatsapp-icon">◉</div><div><h2>WhatsApp Message (Chanda)</h2><p>Edit the message before sending</p></div><button class="modal-close" data-close="chandaModal">×</button></div>
+  <div class="modal-body message-layout"><div class="message-editor">
+    <label>Message Template<textarea id="chandaTemplate" rows="7">🙏 శ్రీ రామ గణేష్ ఉత్సవానికి చందా అందించినందుకు హృదయపూర్వక ధన్యవాదాలు.
+
+{{name}} గారు, మీరు అందించిన చందా మొత్తం: {{amount_received}}.
+
+ధన్యవాదాలు 🙏</textarea></label>
+    <div class="variable-row"><span>Available variables:</span><button type="button" class="token" data-insert="{{name}}">{{name}}</button><button type="button" class="token" data-insert="{{amount_received}}">{{amount_received}}</button></div>
+    <div class="recipient-box"><div class="recipient-head"><strong>Recipients</strong><span id="chandaRecipientCount">0 selected</span></div><div class="audience-options"><label><input type="radio" name="chandaAudience" value="selected" checked> Selected people</label><label><input type="radio" name="chandaAudience" value="pending"> Only pending people</label><label><input type="radio" name="chandaAudience" value="all"> All people</label></div><div class="recipient-list" id="chandaRecipients">{% for p in all_persons %}<label><input type="checkbox" class="modal-person-check" value="{{ p.id }}" data-status="{{ p.payment_status }}" data-received="{{ p.amount_received }}"><span>{{ p.name }}</span><small>{{ p.phone }}</small></label>{% endfor %}</div></div>
+    <div class="modal-actions"><button class="btn btn-light" type="button" id="resetChandaTemplate">↺ Use Default</button><button class="btn btn-whatsapp" type="button" id="startChandaQueue">➤ Start WhatsApp Sending</button></div>
+  </div>
+  <div class="message-preview-col"><div class="preview-heading">Message Preview</div><div class="whatsapp-preview"><div class="preview-brand">◉ &nbsp; WhatsApp</div><div id="chandaPreview" class="preview-bubble"></div></div><div class="send-queue-card" id="chandaQueueCard" hidden><strong>WhatsApp sending queue</strong><p id="chandaQueueStatus"></p><button class="btn btn-whatsapp full-width" id="openNextChanda" type="button">Open next person in WhatsApp →</button><small>Press Send in WhatsApp, then return here for the next person.</small></div></div></div>
+</section></div>
+
+<div class="modal-backdrop" id="individualWhatsappModal" aria-hidden="true"><section class="modal modal-small">
+  <div class="modal-header"><div class="modal-title-icon whatsapp-icon">◉</div><div><h2>Send WhatsApp Message</h2><p>Review or edit the message for this person</p></div><button class="modal-close" data-close="individualWhatsappModal">×</button></div>
+  <div class="modal-body stack-form">
+    <label>Message<textarea id="individualWhatsappTemplate" rows="7" style="height:auto;min-height:150px;padding:12px;line-height:1.6">🙏 శ్రీ రామ గణేష్ ఉత్సవానికి చందా అందించినందుకు హృదయపూర్వక ధన్యవాదాలు.
+
+{{name}} గారు, మీరు అందించిన చందా మొత్తం: {{amount_received}}.
+
+ధన్యవాదాలు 🙏</textarea></label>
+    <div class="modal-actions"><button type="button" class="btn btn-light" data-close="individualWhatsappModal">Cancel</button><button type="button" class="btn btn-whatsapp" id="confirmIndividualWhatsapp">◉ Open WhatsApp</button></div>
+    <small>WhatsApp opens with the prepared message. Press Send in WhatsApp to deliver it.</small>
+  </div>
+</section></div>
+
+<div class="modal-backdrop" id="editPersonModal" aria-hidden="true"><section class="modal modal-small"><div class="modal-header"><div><h2>Edit Person Details</h2><p>Update contributor information</p></div><button class="modal-close" data-close="editPersonModal">×</button></div><form id="editPersonForm" method="post"><div class="modal-body stack-form"><label>Name<input name="name" id="editName" required></label><label>Phone Number<input name="phone" id="editPhone" required></label><label>Chanda Amount<div class="currency-input"><span>₹</span><input name="amount_received" id="editReceived" type="number" min="0" step="0.01" required></div></label><label>Payment Status<select name="payment_status" id="editStatus"><option value="paid">Paid</option><option value="pending">Pending</option></select></label></div><div class="modal-actions"><button class="btn btn-light" type="button" data-close="editPersonModal">Cancel</button><button class="btn btn-primary">Save Changes</button></div></form></section></div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/persons.js') }}"></script>{% endblock %}

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login · Sri Rama Ganesh Utsav Association</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+Telugu:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body class="login-body">
+  <div class="login-art"></div>
+  <div class="login-shade"></div>
+  <section class="login-card">
+    <div class="login-ganesha">ॐ</div>
+    <div class="welcome">Welcome to</div>
+    <h1>Sri Rama Ganesh<br>Association</h1>
+    <div class="login-location">Nagiligond (Vill), Khammam</div>
+    <div class="ornament"><span></span>✦<span></span></div>
+    {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for category, message in messages %}<div class="login-error">{{ message }}</div>{% endfor %}{% endif %}{% endwith %}
+    <form method="post" class="login-form">
+      <label class="login-input"><span>♙</span><input name="username" placeholder="Username" autocomplete="username" required autofocus></label>
+      <label class="login-input"><span>♙</span><input name="password" type="password" placeholder="Password" autocomplete="current-password" required></label>
+      <button class="btn btn-primary login-button" type="submit">Login <span>→</span></button>
+    </form>
+    <p class="login-caption">Ganesh Festival Management System</p>
+  </section>
+</body>
+</html>
